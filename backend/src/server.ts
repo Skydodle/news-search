@@ -1,6 +1,7 @@
 /** @format */
 
 import express from 'express';
+import cors from 'cors';
 import weaviate, { WeaviateClient, Filters } from 'weaviate-client';
 import dotenv from 'dotenv';
 
@@ -21,17 +22,36 @@ const client: WeaviateClient = await weaviate.connectToWeaviateCloud(
   }
 );
 
+app.use(cors());
 app.use(express.json());
 
-/**
- * Converts a date in YYYY-MM-DD format to RFC3339 format
- * @param {string} date - The date in YYYY-MM-DD format
- * @returns {string} - The date in RFC3339 format
- */
-const convertToRFC3339 = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toISOString();
-};
+// In-memory counters for requests and cache (for this challenge only)
+let requestCount = 0;
+let cacheCount = 0;
+const cachedQueries = new Set();
+
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Check Weaviate connection
+    await client.collections.get('NewsArticle').exists();
+    cacheCount = cachedQueries.size;
+    res.status(200).json({
+      message: 'Alive!',
+      requests: requestCount,
+      cache_count: cacheCount,
+      cache_queries: Array.from(cachedQueries),
+    });
+  } catch (error) {
+    console.error(`Healthcheck failed with ${(error as Error).message}`);
+    res.status(503).json({
+      message: 'Database connection failed!',
+      requests: requestCount,
+      cache_count: cacheCount,
+      cache_queries: Array.from(cachedQueries),
+    });
+  }
+});
 
 app.post('/search', async (req, res) => {
   const { query, alpha, limit, startDate, endDate } = req.body;
@@ -67,6 +87,9 @@ app.post('/search', async (req, res) => {
         filters: filters,
       }
     );
+
+    // Simulate caching the query
+    cachedQueries.add(query);
 
     const filteredResult = {
       objects: result.objects.map((obj) => ({
