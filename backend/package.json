@@ -7,7 +7,7 @@
   "scripts": {
     "setup:db": "ts-node src/index.ts",
     "setup:db:log": "echo 'Setting up the database. See output.log for details.' && ts-node src/index.ts > output.log && echo 'Database setup completed.'",
-    "start:server": "ts-node src/server.ts"
+    "start:server": "nodemon src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,13 +16,16 @@
     "@types/dotenv": "^8.2.0",
     "csv-parser": "^3.0.0",
     "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "stream-chain": "^2.2.5",
     "stream-json": "^1.8.0",
     "weaviate-client": "^3.0.8"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/node": "^20.14.9",
     "@types/stream-json": "^1.7.7",
+    "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }
