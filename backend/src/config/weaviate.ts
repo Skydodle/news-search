@@ -15,7 +15,7 @@ const client: WeaviateClient = await weaviate.connectToWeaviateCloud(
     headers: {
       'X-OpenAI-Api-Key': process.env.OPENAI_API_KEY as string,
     },
-    timeout: { init: 30, query: 60, insert: 300 },
+    timeout: { init: 30, query: 300, insert: 300 },
   }
 );
 
