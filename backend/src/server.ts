@@ -127,7 +127,7 @@ app.post('/search', async (req, res) => {
       }
     }
 
-    console.log('Weaviate query result:', result.generated);
+    // console.log('Weaviate query result:', result.generated);
 
     const filteredResult = {
       objects: result.objects.map((obj) => ({
