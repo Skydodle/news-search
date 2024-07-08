@@ -50,13 +50,20 @@ const GenerativeCard: React.FC<GenerativeCardProps> = ({ text, loading }) => {
                 </h4>
             </div>
             {/* Use the Typewriter effect to type out the provided text */}
-            <Typewriter
-                key={text}
-                onInit={(typewriter) => {
-                    typewriter.typeString(formattedText).start();
-                }}
-                options={{ delay: 10 }}
-            />
+            {text ? (
+                <Typewriter
+                    key={text}
+                    onInit={(typewriter) => {
+                        typewriter.typeString(formattedText).start();
+                    }}
+                    options={{ delay: 10 }}
+                />
+            ) : (
+                <p>
+                    No Article found. Try a different alpha filter on the
+                    slider.
+                </p>
+            )}
         </div>
     );
 };
