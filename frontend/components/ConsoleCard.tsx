@@ -8,6 +8,7 @@ const ConsoleCard: React.FC<ConsoleCardProps> = ({ onSend, loading }) => {
     const [inputValue, setInputValue] = useState('');
     const [alpha, setAlpha] = useState(0.5);
     const [fade, setFade] = useState('fade-in');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const searchSuggestions = [
         'dutch football',
@@ -75,6 +76,11 @@ const ConsoleCard: React.FC<ConsoleCardProps> = ({ onSend, loading }) => {
     };
 
     const handleGenerate = () => {
+        if (!inputValue) {
+            setErrorMessage('Please enter a search term.');
+            return;
+        }
+        setErrorMessage('');
         const params: HandleSendParams = {
             inputValue,
             alpha,
@@ -222,7 +228,11 @@ const ConsoleCard: React.FC<ConsoleCardProps> = ({ onSend, loading }) => {
                             </div>
                         )}
                     </div>
-
+                    {errorMessage && (
+                        <div className="text-red-500 text-xs font-mono mt-2">
+                            {errorMessage}
+                        </div>
+                    )}
                     {/* Generate Button Section */}
                     <div className="flex items-center">
                         <button
