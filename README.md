@@ -46,7 +46,7 @@ You can use Docker to setup the demo in one line of code! If you're not familiar
 - ```WEAVIATE_API_KEY=your-weaviate-api-key```
 - ```OPENAI_API_KEY=your-openai-api-key```
 > Use the `example.env` file inside the backend folder, make a copy of it as `.env` and set your variables.
-> Note that if you're using the GPT-4 model (by default), ensure your OpenAI key has access. You can change the `model_name` variable to `gpt-3.5-turbo` inside the `createSchema.ts` script.
+> Note that if you're using the GPT-3.5 model (by default with JS/TS client v3), ensure your OpenAI key has access. You can change the `model_name` variable to `gpt-4` inside the `createSchema.ts` script, additional cost with OpenAI would apply.
 
 1. **Use docker compose**
 -  `docker-compose up --build`
