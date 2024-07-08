@@ -6,6 +6,10 @@ Welcome to News Search, a web application that enables users to search and filte
 
 [![Weaviate](https://img.shields.io/static/v1?label=%E2%9D%A4%20made%20with&message=Weaviate&color=green&style=flat-square)](https://weaviate.io/) [![Docker support](https://img.shields.io/badge/Docker_support-%E2%9C%93-4c1?style=flat-square&logo=docker&logoColor=white)](https://docs.docker.com/get-started/) [![Weaviate](https://img.shields.io/static/v1?label=version&message=v1.1&color=pink&style=flat-square)](https://weaviate.io/)
 
+![new-search](https://github.com/Skydodle/news-search/assets/69279538/cb257f21-adb2-4bc4-97fe-37523e3914df)
+
+
+
 ## 🚀 Features
 
 News Search relies on Weaviate's [Generative search](https://weaviate.io/developers/weaviate/search/generative) hybrid model to conduct search between pure keyword search, hybrid search, or pure vector semantic search using the [alpha](https://weaviate.io/developers/weaviate/search/hybrid#balance-keyword-and-vector-search) property in the query, combine with Weaviate's [OpenAI module](https://weaviate.io/developers/weaviate/modules/reader-generator-modules/generative-openai) integration and [JS/TS v3 Client Library](https://weaviate.io/developers/weaviate/client-libraries/typescript)  to produce a powerful semantic query with generative summary result.
