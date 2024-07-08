@@ -5,7 +5,6 @@
   "main": "dist/index.ts",
   "type": "module",
   "scripts": {
-    "setup:db": "ts-node src/index.ts",
     "setup:db:log": "echo 'Setting up the database. See output.log for details.' && ts-node src/index.ts > output.log && echo 'Database setup completed.'",
     "start:server": "nodemon src/server.ts"
   },
