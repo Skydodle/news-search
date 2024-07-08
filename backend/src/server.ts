@@ -25,42 +25,38 @@ const client: WeaviateClient = await weaviate.connectToWeaviateCloud(
 app.use(cors());
 app.use(express.json());
 
-// In-memory counters for requests and cache (for this challenge only)
-let requestCount = 0;
-let cacheCount = 0;
-const cachedQueries = new Set();
-
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {
     // Check Weaviate connection
     await client.collections.get('NewsArticle').exists();
-    cacheCount = cachedQueries.size;
     res.status(200).json({
       message: 'Alive!',
-      requests: requestCount,
-      cache_count: cacheCount,
-      cache_queries: Array.from(cachedQueries),
     });
   } catch (error) {
     console.error(`Healthcheck failed with ${(error as Error).message}`);
     res.status(503).json({
       message: 'Database connection failed!',
-      requests: requestCount,
-      cache_count: cacheCount,
-      cache_queries: Array.from(cachedQueries),
     });
   }
 });
 
 app.post('/search', async (req, res) => {
-  const { query, alpha, limit, startDate, endDate } = req.body;
+  const { query, alpha, startDate, endDate } = req.body;
+  console.log('Received search request with the following data:', {
+    query,
+    alpha,
+    startDate,
+    endDate,
+  });
 
   try {
     const newsArticleCollection = client.collections.get('NewsArticle');
 
     const generatePrompt = `
-    Please identify the top 5 articles that would most likely get the world's attention or be considered the most important. For each article, include the title, link, publication date, and a brief summary explaining why it was picked. Consider factors such as global impact, relevance to current major events, and the potential to influence public opinion. The format should be:
+    Indentify the top 5 articles from the search result that would most likely get the user's attention or be considered the most important relatively to the search term. Consider factors such as global impact, relevance to current major events, and the potential to influence public opinion. For each article, include the title, link, publication date, and a brief summary explaining why it was picked. The format should be:
+
+    Here are the top "5 or article count if less than 5" articles picked from search result considering factors such as global impact, relevance to current events, and the potential to influence public opinion:
 
     1. "Article Title" - "date and time" - Summary explaining why this article is important. - [Read more]"link".
     2. "Article Title" - "date and time" - Summary explaining why this article is important. - [Read more]"link".
@@ -69,27 +65,69 @@ app.post('/search', async (req, res) => {
     5. "Article Title" - "date and time" - Summary explaining why this article is important. - [Read more]"link".
   `;
 
-    // prettier-ignore
-    const filters = Filters.and(
-      newsArticleCollection.filter.byProperty('pubDate').greaterOrEqual(startDate),
+    // Split the query string into an array of words
+    const queryArray = query.split(' ');
+
+    // Define date filter
+    const dateFilters = Filters.and(
+      newsArticleCollection.filter
+        .byProperty('pubDate')
+        .greaterOrEqual(startDate),
       newsArticleCollection.filter.byProperty('pubDate').lessOrEqual(endDate)
     );
 
-    const result = await newsArticleCollection.generate.hybrid(
-      query,
-      {
-        groupedTask: generatePrompt,
-        groupedProperties: ['title', 'description', 'link', 'pubDate'],
-      },
-      {
-        alpha: alpha,
-        limit: limit,
-        filters: filters,
-      }
-    );
+    let combinedFilters;
 
-    // Simulate caching the query
-    cachedQueries.add(query);
+    // Define combinedFilter for stricter keyword search if alpha is 0 - 0.2
+    if (alpha === 0) {
+      combinedFilters = Filters.and(
+        dateFilters,
+        Filters.or(
+          newsArticleCollection.filter
+            .byProperty('title')
+            .containsAny(queryArray),
+          newsArticleCollection.filter
+            .byProperty('description')
+            .containsAny(queryArray)
+        )
+      );
+    } else {
+      combinedFilters = dateFilters;
+    }
+
+    // Define generative hybrid search query parameters
+    const performQuery = async (autoLimit: number) => {
+      return await newsArticleCollection.generate.hybrid(
+        query,
+        {
+          groupedTask: generatePrompt,
+          groupedProperties: ['title', 'description', 'link', 'pubDate'],
+        },
+        {
+          queryProperties: ['title', 'description'],
+          alpha: alpha,
+          limit: 35,
+          autoLimit: autoLimit,
+          filters: combinedFilters,
+          fusionType: 'RelativeScore',
+        }
+      );
+    };
+
+    let result;
+    try {
+      result = await performQuery(10);
+    } catch (error) {
+      // Lower autolimit if query result exceeds openai limit and try query again
+      if ((error as Error).message.includes("Invalid 'max_tokens'")) {
+        console.log('Retrying with lower autoLimit...');
+        result = await performQuery(5);
+      } else {
+        throw error;
+      }
+    }
+
+    console.log('Weaviate query result:', result.generated);
 
     const filteredResult = {
       objects: result.objects.map((obj) => ({
@@ -98,10 +136,10 @@ app.post('/search', async (req, res) => {
       })),
       generated: result.generated,
     };
-    console.log(filteredResult);
 
     res.json(filteredResult);
   } catch (error) {
+    console.error('Error during search request:', error);
     res.status(500).json({ error: (error as Error).message });
   }
 });
