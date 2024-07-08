@@ -28,11 +28,6 @@ const collectionObj = {
       dataType: 'date' as const,
       description: 'The publication date of the article',
     },
-    {
-      name: 'guid',
-      dataType: 'text' as const,
-      description: 'The GUID of the article',
-    },
   ],
   vectorizers: weaviate.configure.vectorizer.text2VecOpenAI(),
   generative: weaviate.configure.generative.openAI(),

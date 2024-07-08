@@ -31,7 +31,10 @@ const convertCsvToJson = (csvFilePath: string, jsonFilePath: string) => {
         // Check for duplicate titles
         if (!uniqueArticles.has(data.title)) {
           uniqueArticles.add(data.title);
-          results.push(data);
+
+          // Remove the guid property
+          const { guid, ...rest } = data;
+          results.push(rest);
         }
       }
     })
